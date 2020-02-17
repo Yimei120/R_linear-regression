@@ -1,0 +1,237 @@
+---
+title: "STOR 565 Spring 2020 Homework 2"
+author: "Yimei Fan"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+subtitle: \textbf{Due on 01/27/2020 in Class}
+header-includes: \usepackage{amsgen,amsmath,amstext,amsbsy,amsopn,amssymb,mathabx,amsthm,bm,bbm}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+## install.packages("ISLR")   # if you don't have this package, run it
+library("ISLR")
+library(MASS)
+```
+\theoremstyle{definition}
+\newtheorem*{hint}{Hint}
+
+\theoremstyle{remark}
+\newtheorem*{rmk}{Remark}
+
+*Remark.* This homework aims to help you go through the necessary preliminary material from linear regression. Credits for **Theoretical Part** and **Computational Part** are in total 110 pt. At most 100 pt can be earned for this homework. For **Computational Part**, please complete your answer in the **RMarkdown** file and submit your printed PDF homework created using **RMarkdown**.
+
+## Computational Part
+
+1. (*25 pt*) Consider the dataset "Boston" in predicting the crime rate at Boston with associated covariates.
+```{r Boston}
+head(Boston)
+```
+Suppose you would like to predict the crime rate with explantory variables
+
+* `age`   - Proportion of owner-occupied units built prior to 1940
+* `dis`   - Weighted mean of distances to employement centers
+* `rad`   - Index of accessibility to radial highways
+
+Run with the linear model
+```{r lm}
+mod1 <- lm(crim ~ age + dis + rad, data = Boston)
+summary(mod1)
+```
+Answer the following questions.
+
+(i) What do the following quantities that appear in the above output mean in the linear model? Provide a brief description.
+    + `t value` and `Pr(>|t|)` of `rad`
+    
+    **Answer:** 
+    t-value: it is calculated by estimate/Std.Error. It is used to calculated P-value, which can be used to do hypothesis testing for each variables.
+    `Pr(>|t|)` of `rad`: H0: the coefficient of 'rad' equals to zero. Ha: the coefficient of 'rad' does not equal to zero. Since the p-value for rad is  <2e-16, and it is lower than 0.05. We can reject H0, which means the coefficient of rad is not zero and it is significant.
+
+    ***
+    + `Adjusted R-squared` 
+    
+    **Answer:** 
+    Adjusted R-squared: It measures how well the model can fit the data. It will not be influenced by the number of variables. The formula is 1-MSE/MST.
+    
+    ***
+    + `F-statistic`, `DF` and corresponding `p-value`
+
+    **Answer:** 
+    F-statistic: It is similar to t-statistic but F-statistic is for the whole model. If there is only one variable, then F-statistic should equals to (t-statistic)^2.
+    It compares the fit of the whole model and null model(Y=1) and the larger F-statistic is, the more significant the whole model will be.
+    DF: There are two DF in the table. The first one is the number of variables(p), and the second one is for the degree of fredom for whole model: n-p-1.
+    `p-value`: It is calculated from F-statistics, and it is used to conduct hypothesis test for H0: all coefficients are zero. Ha: At lease one coefficient is not zero.2.2e-16 is lower than 0.05, therefore, we should reject H0, that means at least one coefficient is not zero.
+    
+    ***
+    
+
+(ii) Are the following sentences True of False? Briefly justify your answer.
+    + `age` is not a significant predictor of crim, and we can drop it from the model.
+    
+    **Answer:** 
+    True. P-value is 0.406, and it is higher than 0.05.
+    
+    ***
+    + Both `Multiple R-squared` and `Adjusted R-squared` increase with number of variables since they take into account all the variables and more variance is explained as the model becomes more complicated when the number of variables increases. 
+    
+    **Answer:** 
+    False. Adjusted R-squared will not increase with the number of variables, but it will increase if the model fits data better.
+
+    ***    
+    + `rad` has a positive effect on the response.
+    
+    **Answer:**
+    True. The coefficient of 'rad' is 0.56750, and it is positive. Moreover, 'rad' is significant in this model, which means it does have effect on the response.
+    
+    
+    ***
+    + Our model residuals appear to be normally distributed.
+    
+    \begin{hint}
+      You need to access to the model residuals in justifying the last sentence. The following commands might help.
+    \end{hint}
+    ```{r, eval=FALSE}
+    # Obtain the residuals
+    res1 <- residuals(mod1)
+    
+    # Normal QQ-plot of residuals
+    plot(mod1, 2)
+    
+    # Conduct a Normality test via Shapiro-Wilk and Kolmogorov-Smirnov test
+    shapiro.test(res1)
+    ks.test(res1, "pnorm")
+    ```
+
+    **Answer:** 
+    
+    True. According to the qq-plot, the residuals roughly form a line, which means they are normally distributed.
+    According to Normality tests, W and D are larger than 0.05. Therefore, the residuals are normally distributed.
+
+    ***
+    
+2. (*30 pt*, Similar to Textbook Exercises 3.10) This question should be answered using the `Carseats` data set.
+
+```{r}
+head(Carseats)
+```
+
+(a) Fit a multiple regression model to predict `Sales` using `US`, `Urban`, `Advertising` and `Price`.
+
+**Answer:**
+```{r}
+model = lm(Sales~US+Urban+Advertising+Price, data = Carseats)
+print(summary(model))
+```
+***
+
+(b) Provide an interpretation of each coefficient in the model. Be careful that some of the variables in the model are qualitative!
+
+**Answer:**
+The coeffieicents of 'US' and 'Urban' are not significant, and we should not include them in the model. The coefficient of 'Advertising' is 0.120333, and it means that with more advertising, the sales will increase. The coefficient of 'Price' is -0.054612, and it means if the price of car seats increase, the sales will decrease accordingly.
+
+***
+
+(c) Write out the model in equation form, being careful to handle the qualitative variables properly.
+
+**Answer:**
+If 'Yes' in 'US' and 'Yes' in 'Urban' equals 1:
+sales = 13.03 + 0.12Advertising -0.05Price 
+
+If 'Yes' in 'US' and 'Yes' in 'Urban' equals 0:
+sales = 13.01 + 0.12Advertising -0.05Price
+
+***
+
+(d) For which of the predictors can you reject the null hypothesis $H_0 : \beta_j = 0$?
+
+**Answer:** 
+In order to reject the null hypothesis, the P-value need to be smaller than 0.05. Therefore, for 'Advertising' and 'Price', we can reject the null hypothesis.
+
+***
+
+(e) On the basis of your response to the previous question, fit a smaller model that only uses the predictors for which there is evidence of association with the outcome.
+
+**Answer:**
+```{r}
+summary(lm(Sales~Advertising+Price, data = Carseats))
+```
+***
+
+(f) How well do the models in (a) and (e) fit the data?
+
+**Answer:** 
+The model in (a): Adjusted R-squared is 0.2747, P-value < 2.2e-16
+The model in (e): Adjusted R-squared is 0.2782, P-value < 2.2e-16
+
+Compared to model(a), model(e) has slightly higher adjusted R-squared, and both models are significant. Therefore, both model fit the data well and model(e) is slightly better.
+
+***
+
+(g) Using the model from (e), obtain 90% confidence intervals for the coefficient(s).
+
+**Answer:**
+```{r}
+#Advertising:
+tstar = qt(.9+0.05,397)
+
+0.123107+ tstar*0.018079*c(-1,1)
+
+#Price:
+tstarr = qt(.9+0.05,397)
+
+-0.054613 + tstarr*0.005078*c(-1,1)
+```
+
+***
+
+(h) Using the leave-one-out cross-validation and 5-fold cross-validation techniques to compare the performance of models in (a) and (e). What can you tell from (f) and (h)?
+
+**Hint.** Functions `update` (with option `subset`) and `predict`.
+
+**Answer:** 
+```{r}
+library(caret)
+
+
+#leave-one-out cross-validation
+#(a)
+train.control1 <- trainControl(method = "LOOCV")
+model1 <- train(Sales~US+Urban+Advertising+Price, data = Carseats, method = "lm",
+               trControl = train.control1)
+print(model1)
+#(e)
+train.control2 <- trainControl(method = "LOOCV")
+model2 <- train(Sales ~ Advertising + Price, data = Carseats, method = "lm",
+               trControl = train.control2)
+print(model2)
+
+#RMSE for (a) is  2.420802, and Rsquared is 0.263687; RMSE for (e) is 2.408753 and Rsquared is 0.2708067. (e) performs better.
+
+
+#5-fold cross-validation
+#(a)
+set.seed(123) 
+train.control3 <- trainControl(method = "cv", number = 5)
+model3 <- train(Sales~US+Urban+Advertising+Price, data = Carseats, method = "lm",
+               trControl = train.control3)
+print(model3)
+
+
+#(e)
+set.seed(123) 
+train.control4 <- trainControl(method = "cv", number = 5)
+model4 <- train(Sales ~ Advertising + Price, data = Carseats, method = "lm",
+               trControl = train.control4)
+print(model4)
+
+#RMSE for (a) is 2.436002, and Rsquared is 0.2746255; RMSE for (e) is 2.42669 and Rsquared is 0.2803708. (e) performs better.
+
+
+#(f) and (h) gives us similar result regarding to model performance and they provide similar R-squared value.
+
+
+```
+
+***
